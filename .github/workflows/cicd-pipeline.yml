@@ -46,7 +46,9 @@ jobs:
         with:
           name: target-${{ matrix.os }}
       - name: Run Three Tests (Maven)
-        run: mvn test -Dtest=sg.edu.ntu.split_and_share.service.UserServiceImplTest,sg.edu.ntu.split_and_share.service.ExpenseServiceImplTest,sg.edu.ntu.split_and_share.controller.ExpenseControllerTest
+        run: |
+          TEST_CLASSES="sg.edu.ntu.split_and_share.service.UserServiceImplTest,sg.edu.ntu.split_and_share.service.ExpenseServiceImplTest,sg.edu.ntu.split_and_share.controller.ExpenseControllerTest"
+          mvn test -Dtest="$TEST_CLASSES"
   
   build-docker-image:
     runs-on: ${{ matrix.os }}
