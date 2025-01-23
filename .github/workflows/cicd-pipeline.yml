@@ -22,7 +22,7 @@ jobs:
         run: mvn -B clean install -DskipTests # -B for batch mode in mvn command. prevents interactive prompts in Maven, which can cause workflow to hang.
       - name: Upload Artifacts (if needed) #crucial for multi OS build - saving the build outputs (JARs, etc) so that subsequents jobs (like testing and deploy) can use
         if: always() # Always run this step, even if previous steps fail
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: target-${{ matrix.os }} # creating distinct artifact names (e.g. target-ubuntu-latest, target-marcos-latest). preventin overwriting artifacts
           path: target/*.jar # Or the specific artifacts you need
