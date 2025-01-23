@@ -26,7 +26,7 @@ jobs:
         with:
           name: target-${{ matrix.os }} # creating distinct artifact names (e.g. target-ubuntu-latest, target-marcos-latest). preventin overwriting artifacts
           path: target/*.jar # Or the specific artifacts you need
-          retention-days: 5 # How long to keep the artifacts
+          retention-days: 1 # How long to keep the artifacts
   test:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -41,6 +41,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin' # Recommended distribution
           cache: maven
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: target-${{ matrix.os }}
       - name: Run Tests (Maven)
         run: mvn test -Dtest=sg.edu.ntu.split_and_share.service.UserServiceImplTest,sg.edu.ntu.split_and_share.service.ExpenseServiceImplTest,sg.edu.ntu.split_and_share.controller.ExpenseControllerTest.java
   
