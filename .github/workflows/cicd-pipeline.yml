@@ -68,7 +68,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest] #windows fails this test. need to look into this
     needs: code_scan
     steps:
       - uses: actions/checkout@v3
