@@ -110,10 +110,9 @@ jobs:
       - name: Install Heroku CLI
         run: curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
       - name: Login to Heroku
-        run: heroku container:login
-      - name: Set Heroku Stack
-        run: heroku stack:set container -a bindu-split-and-share
-      - name: Push Container Image to Heroku
-        run: heroku container:push web -a bindu-split-and-share
-      - name: Release Container Image on Heroku
-        run: heroku container:release web -a bindu-split-and-share
+        run: echo ${{ secrets.HEROKU_API_KEY }} | heroku auth:token | docker login --username=_ --password-stdin registry.heroku.com
+      - name: Push and Release to Heroku
+        run: |
+          heroku container:push web -a bindu-split-and-share
+          heroku container:release web -a bindu-split-and-share
+
