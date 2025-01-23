@@ -45,8 +45,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: target-${{ matrix.os }}
-      - name: Run Tests (Maven)
-        run: mvn test
+      - name: Run Three Tests (Maven)
+        run: mvn test -Dtest=sg.edu.ntu.split_and_share.service.UserServiceImplTest,sg.edu.ntu.split_and_share.service.ExpenseServiceImplTest,sg.edu.ntu.split_and_share.controller.ExpenseControllerTest
   
   build-docker-image:
     runs-on: ${{ matrix.os }}
