@@ -19,8 +19,14 @@ jobs:
           distribution: 'temurin' # Recommended distribution
           cache: maven
       - name: Install Dependencies (Maven)
-        run: mvn clean install -DskipTests
-  
+        run: mvn -B clean install -DskipTests # -B for batch mode in mvn command. prevents interactive prompts in Maven, which can cause workflow to hang.
+      - name: Upload Artifacts (if needed) #crucial for multi OS build - saving the build outputs (JARs, etc) so that subsequents jobs (like testing and deploy) can use
+        if: always() # Always run this step, even if previous steps fail
+        uses: actions/upload-artifact@v3
+        with:
+          name: target-${{ matrix.os }} # creating distinct artifact names (e.g. target-ubuntu-latest, target-marcos-latest). preventin overwriting artifacts
+          path: target/*.jar # Or the specific artifacts you need
+          retention-days: 5 # How long to keep the artifacts
   test:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -87,7 +93,7 @@ jobs:
           distribution: 'temurin'
           cache: maven # Optional, but recommended
       - name: Install Snyk CLI
-        uses: snyk/actions/setup@v1.7.3
+        run: npm install -g snyk # Install snyk cli using npm
       - name: Run Snyk Vulnerability Scan (Dependencies Only)
         env: # Define environment variables here
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} # Use GitHub secrets
@@ -108,7 +114,7 @@ jobs:
           distribution: 'temurin'
           cache: maven # Optional, but recommended
       - name: Install Snyk CLI
-        uses: snyk/actions/setup@v1.7.3
+        run: npm install -g snyk # Install snyk cli using npm
       - name: Run Snyk Code Vulnerability Scan
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
