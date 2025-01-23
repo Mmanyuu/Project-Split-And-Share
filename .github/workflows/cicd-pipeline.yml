@@ -41,12 +41,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin' # Recommended distribution
           cache: maven
-      - name: Download Artifacts
+      - name: Download Artifacts #downloading the artifacts that was saved in build
         uses: actions/download-artifact@v3
         with:
           name: target-${{ matrix.os }}
       - name: Run Tests (Maven)
-        run: mvn test -Dtest=sg.edu.ntu.split_and_share.service.UserServiceImplTest,sg.edu.ntu.split_and_share.service.ExpenseServiceImplTest,sg.edu.ntu.split_and_share.controller.ExpenseControllerTest.java
+        run: mvn test
   
   build-docker-image:
     runs-on: ${{ matrix.os }}
