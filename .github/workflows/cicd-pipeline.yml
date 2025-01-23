@@ -109,8 +109,6 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install Heroku CLI 
         run: curl https://cli-assets.heroku.com/install-ubuntu.sh | sh #installs the Heroku CLI (Command Line Interface) on the runner
-      - name: Login to Heroku
-        run: echo ${{ secrets.HEROKU_API_KEY }} | heroku auth:token
       - name: Docker Login to Heroku #necessary cause interacting with Docker's registry (Heroku’s private registry in this case). need to authenticate Docker to make sure you're authorized to push images to Heroku
         run: echo ${{ secrets.HEROKU_API_KEY }} | docker login --username=_ --password-stdin registry.heroku.com
       - name: Push and Release to Heroku
