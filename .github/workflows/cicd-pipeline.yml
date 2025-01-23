@@ -2,11 +2,11 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main-backup ]
+    branches: [ main-backup ] # Triggers. Gitaction will trigger when i git push main-backup branch
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }} #
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -87,7 +87,7 @@ jobs:
           distribution: 'temurin'
           cache: maven # Optional, but recommended
       - name: Install Snyk CLI
-        uses: snyk/actions/setup@v1.7.3
+        uses: snyk/actions/setup@v1.5.0
       - name: Run Snyk Vulnerability Scan (Dependencies Only)
         env: # Define environment variables here
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} # Use GitHub secrets
@@ -108,7 +108,7 @@ jobs:
           distribution: 'temurin'
           cache: maven # Optional, but recommended
       - name: Install Snyk CLI
-        uses: snyk/actions/setup@v1.7.3
+        uses: snyk/actions/setup@v1.5.0
       - name: Run Snyk Code Vulnerability Scan
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
