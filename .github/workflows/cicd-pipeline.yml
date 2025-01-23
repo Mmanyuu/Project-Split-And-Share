@@ -3,8 +3,11 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main-backup ] # Triggers. Gitaction will trigger when i git push main-backup branch
+      # - develop               Triggers. Gitaction will trigger when i git push develop branch
+      # - release               Triggers. Gitaction will trigger when i git push release branch
 
 jobs:
+  
   build:
     runs-on: ${{ matrix.os }} #ensuring our projects can be build on all three kind of OS
     strategy:
@@ -31,6 +34,7 @@ jobs:
   dependencies_scan:
     runs-on: ubuntu-latest # No point scanning all three os cause this is about scanning our project
     needs: build # Depends on the build job
+    ## if: github.ref == 'refs/heads/release' -> Run on release ##
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -49,6 +53,7 @@ jobs:
   code_scan:
     runs-on: ubuntu-latest # Similar to dependencies test - No point scanning all three os cause this is about scanning our project codes
     needs: build # Depends on the build job
+    ## if: github.ref == 'refs/heads/release' -> Run on release ##
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -70,6 +75,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest] #windows fails this test. need to look into this
     needs: code_scan
+    ## if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/release' -> Run on both develop and release ##
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
