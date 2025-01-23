@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }} #ensuring our projects can be build on all three kind of OS
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -27,12 +27,27 @@ jobs:
           name: target-${{ matrix.os }} # creating distinct artifact names (e.g. target-ubuntu-latest, target-marcos-latest). preventin overwriting artifacts
           path: target/*.jar # Or the specific artifacts you need
           retention-days: 1 # How long to keep the artifacts
-  
+
+  dependencies_scan:
+    runs-on: ubuntu-latest # No point scanning all three os cause this is about scanning our project
+    needs: build # Depends on the build job
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven # Optional, but recommended
+      - name: Install Snyk CLI
+        run: npm install -g snyk # Install snyk cli using npm
+      - name: Run Snyk Vulnerability Scan (Dependencies Only)
+        env: # Define environment variables here
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} # Use GitHub secrets
+        run: snyk test --file=pom.xml # Scan pom.xml for dependencies
+
   code_scan:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ubuntu-latest # Similar to dependencies test - No point scanning all three os cause this is about scanning our project codes
     needs: build # Depends on the build job
     steps:
       - uses: actions/checkout@v3
@@ -70,7 +85,7 @@ jobs:
           path: target # Download the contents into the 'target' directory
       - name: Run Three Tests (Maven)
         run: |
-          export TEST_CLASSES="sg.edu.ntu.split_and_share.service.UserServiceImplTest.java,sg.edu.ntu.split_and_share.service.ExpenseServiceImplTest.java,sg.edu.ntu.split_and_share.controller.ExpenseControllerTest.java"
+          export TEST_CLASSES="sg.edu.ntu.split_and_share.service.UserServiceImplTest,sg.edu.ntu.split_and_share.service.ExpenseServiceImplTest,sg.edu.ntu.split_and_share.controller.ExpenseControllerTest"
           mvn test -Dtest="$TEST_CLASSES"
   
   build-docker-image:
@@ -80,10 +95,12 @@ jobs:
       - uses: actions/checkout@v3
       - name: Login to Docker Hub
         run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-      - name: Build Docker Image
-        run: docker build -t bindugopinathan/project_split_and_share:tagname .
-      - name: Push Docker Image to Docker Hub
-        run: docker push bindugopinathan/project_split_and_share:tagname
+      - name: Pull Docker Image
+        run: docker pull bindugopinathan/project_split_and_share:tagname
+      - name: Tag Docker Image
+        run: docker tag bindugopinathan/project_split_and_share:tagname bindugopinathan/project_split_and_share:new_tag
+      - name: Push Docker Image
+        run: docker push bindugopinathan/project_split_and_share:latest
   
   deploy:
     runs-on: ubuntu-latest
@@ -101,25 +118,6 @@ jobs:
       - name: Release Container Image on Heroku
         run: heroku container:release web -a bindu-split-and-share
 
-  dependencies_scan:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    needs: build # Depends on the build job
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven # Optional, but recommended
-      - name: Install Snyk CLI
-        run: npm install -g snyk # Install snyk cli using npm
-      - name: Run Snyk Vulnerability Scan (Dependencies Only)
-        env: # Define environment variables here
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} # Use GitHub secrets
-        run: snyk test --file=pom.xml # Scan pom.xml for dependencies
+
 
   
