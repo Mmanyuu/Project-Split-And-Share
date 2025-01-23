@@ -100,7 +100,7 @@ jobs:
       - name: Tag Docker Image
         run: docker tag bindugopinathan/project_split_and_share:tagname bindugopinathan/project_split_and_share:new_tag
       - name: Push Docker Image
-        run: docker push bindugopinathan/project_split_and_share:latest
+        run: docker push bindugopinathan/project_split_and_share:new_tag
   
   deploy:
     runs-on: ubuntu-latest
@@ -117,7 +117,3 @@ jobs:
         run: heroku container:push web -a bindu-split-and-share
       - name: Release Container Image on Heroku
         run: heroku container:release web -a bindu-split-and-share
-
-
-
-  
