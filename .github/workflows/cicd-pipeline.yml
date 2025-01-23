@@ -49,7 +49,7 @@ jobs:
       - name: Run Three Tests (Maven)
           run: |
           export TEST_CLASSES="sg.edu.ntu.split_and_share.service.UserServiceImplTest.java,sg.edu.ntu.split_and_share.service.ExpenseServiceImplTest.java,sg.edu.ntu.split_and_share.controller.ExpenseControllerTest.java"
-          mvn test -Dtest="$TEST_CLASSES"
+          mvn test -Dtest="$TEST_CLASSES" 
   
   build-docker-image:
     runs-on: ${{ matrix.os }}
