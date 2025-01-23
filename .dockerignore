@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+node_modules
+=======
 target
 .classpath
 .project
 postgres-data
+>>>>>>> 081c5cfa0654dfca65ba31d43b2eb6a236b7aaeb

@@ -1,3 +1,12 @@
+<<<<<<< HEAD
+FROM eclipse-temurin:17-jdk-jammy
+WORKDIR /app
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+COPY src ./src
+RUN ./mvnw install -DskipTests
+CMD ["./mvnw", "spring-boot:run"]
+=======
 #Use Eclipse Temurin JDK for Java 17
 
 FROM eclipse-temurin:17-jdk-jammy
@@ -27,3 +36,4 @@ RUN ./mvnw package -DskipTests
 #Default command to start the Spring Boot Application
 
 CMD ["./mvnw","spring-boot:run"]
+>>>>>>> 081c5cfa0654dfca65ba31d43b2eb6a236b7aaeb
