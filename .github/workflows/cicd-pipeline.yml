@@ -42,9 +42,10 @@ jobs:
           distribution: 'temurin' # Recommended distribution
           cache: maven
       - name: Download Artifacts #downloading the artifacts that was saved in build
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v2
         with:
           name: target-${{ matrix.os }}
+          path: target/*.jar
       - name: Run Three Tests (Maven)
         run: |
           TEST_CLASSES="sg.edu.ntu.split_and_share.service.UserServiceImplTest.java,sg.edu.ntu.split_and_share.service.ExpenseServiceImplTest.java,sg.edu.ntu.split_and_share.controller.ExpenseControllerTest.java"
