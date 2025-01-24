@@ -1,3 +1,5 @@
+##two types of commands for gitaction: run(used to execute commands or scripts directly on the runner. such as npm install for installing dependencies) or uses (running usable actions from github marketplace or predefined actions provided by github)
+
 name: CI/CD Pipeline
 
 on:
@@ -19,7 +21,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'temurin' # Recommended distribution
+          distribution: 'temurin'
           cache: maven #Enables Maven dependency caching to speed up builds by reusing previously downloaded dependencies
       - name: Install Dependencies (Maven)
         run: mvn -B clean install -DskipTests # -B for batch mode in mvn command. prevents interactive prompts in Maven, which can cause workflow to hang.
@@ -33,40 +35,37 @@ jobs:
 
   dependencies_scan:
     runs-on: ubuntu-latest # No point scanning all three os cause this is about scanning our project
-    needs: build # Depends on the build job
+    needs: build
     if: github.ref_name == 'release' # Only run on release branch
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
       - name: Install Snyk CLI
-        uses: snyk/actions/setup@master
-        id: snyk
-        with:
-          snyk-version: v1.391.0
+        uses: snyk/actions/setup@master #installing the latest version of snyk from github market
       - name: Run Snyk Vulnerability Scan (Dependencies Only)
-        env: # Define environment variables here
+        env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} # Use GitHub secrets
         run: snyk test --file=pom.xml --severity-threshold=high || echo "Issues detected but not failing the build"  # Scan pom.xml for dependencies
 
   code_scan:
-    runs-on: ubuntu-latest # Similar to dependencies test - No point scanning all three os cause this is about scanning our project codes
-    needs: build # Depends on the build job
+    runs-on: ubuntu-latest # Similar to dependencies test - No point scanning all three os cause this is about scanning our project codes.
+    needs: build
     if: github.ref_name == 'release' # Only run on release branch
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven # Optional, but recommended
+          cache: maven
       - name: Install Snyk CLI
-        run: npm install -g snyk # Install snyk cli using npm
+        run: npm install -g snyk # trying to see if can install snyk using npm. this is another way of installing snyk.
       - name: Run Snyk Code Vulnerability Scan
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -79,19 +78,19 @@ jobs:
         os: [ubuntu-latest, macos-latest] #windows fails this test. need to look into this
     needs: build
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'temurin' # Recommended distribution
+          distribution: 'temurin'
           cache: maven
       - name: Download Artifacts #downloading the artifacts that was saved in build
         uses: actions/download-artifact@v4
         with:
-          name: target-${{ matrix.os }}
+          name: target-${{ matrix.os }} #taking respective os target file uploaded as artifact (e.g. target-ubuntu-latest, target-marcos-latest)
           path: target # Download the contents into the 'target' directory
-      - name: Run Three Tests (Maven)
+      - name: Run Three Tests
         run: |
           export TEST_CLASSES="sg.edu.ntu.split_and_share.service.UserServiceImplTest,sg.edu.ntu.split_and_share.service.ExpenseServiceImplTest,sg.edu.ntu.split_and_share.controller.ExpenseControllerTest"
           mvn test -Dtest="$TEST_CLASSES"
@@ -103,19 +102,19 @@ jobs:
         os: [ubuntu-latest, macos-latest] #windows fails this test. need to look into this
     needs: code_scan
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'temurin' # Recommended distribution
+          distribution: 'temurin'
           cache: maven
-      - name: Download Artifacts #downloading the artifacts that was saved in build
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
           name: target-${{ matrix.os }}
-          path: target # Download the contents into the 'target' directory
-      - name: Run Three Tests (Maven)
+          path: target
+      - name: Run Three Tests
         run: |
           export TEST_CLASSES="sg.edu.ntu.split_and_share.service.UserServiceImplTest,sg.edu.ntu.split_and_share.service.ExpenseServiceImplTest,sg.edu.ntu.split_and_share.controller.ExpenseControllerTest"
           mvn test -Dtest="$TEST_CLASSES"
@@ -125,7 +124,7 @@ jobs:
     needs: test-release
     if: github.ref_name == 'release' # Only run on release branch
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Login to Docker Hub
         run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
       - name: Pull Docker Image
@@ -140,7 +139,7 @@ jobs:
     needs: build-docker-image
     if: github.ref_name == 'release' # Only run on release branch
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Heroku CLI 
         run: curl https://cli-assets.heroku.com/install-ubuntu.sh | sh #installs the Heroku CLI (Command Line Interface) on the runner
       - name: Docker Login to Heroku #necessary cause interacting with Docker's registry (Heroku’s private registry in this case). need to authenticate Docker to make sure you're authorized to push images to Heroku
