@@ -74,7 +74,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest] #windows fails this test. need to look into this
-    needs: code_scan
+    needs: ${{ github.ref_name == 'release' && 'code_scan' || '' }} # Depend on code_scan only for release branch
     if: github.ref_name == 'develop' || github.ref_name == 'release'
     steps:
       - uses: actions/checkout@v3
