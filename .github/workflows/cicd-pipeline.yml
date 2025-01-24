@@ -20,11 +20,11 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin' # Recommended distribution
-          cache: maven
+          cache: maven #Enables Maven dependency caching to speed up builds by reusing previously downloaded dependencies
       - name: Install Dependencies (Maven)
         run: mvn -B clean install -DskipTests # -B for batch mode in mvn command. prevents interactive prompts in Maven, which can cause workflow to hang.
       - name: Upload Artifacts (if needed) #crucial for multi OS build - saving the build outputs (JARs, etc) so that subsequents jobs (like testing and deploy) can use
-        if: always() # Always run this step, even if previous steps fail
+        if: always() # Always run this step, even if previous steps such as installing dependencies fail. to ensure whatever been build are kept and uploaded
         uses: actions/upload-artifact@v4
         with:
           name: target-${{ matrix.os }} # creating distinct artifact names (e.g. target-ubuntu-latest, target-marcos-latest). preventin overwriting artifacts
