@@ -1,4 +1,4 @@
-name: CI/CD Pipeline (For both branches)
+name: CI/CD Pipeline - Heroku Deploy
 
 on:
   push:
