@@ -1,4 +1,4 @@
-name: CICD Workflow Release Branch
+name: CICD Workflow Release Branch #Digital Ocean deploy
 
 on:
   push:
