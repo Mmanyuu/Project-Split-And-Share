@@ -146,4 +146,3 @@ jobs:
         run: |
           heroku container:push web -a bindu-split-and-share
           heroku container:release web -a bindu-split-and-share
-
