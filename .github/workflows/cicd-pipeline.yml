@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main-backup ] # Triggers. Gitaction will trigger when i git push main-backup branch
-      # - develop               Triggers. Gitaction will trigger when i git push develop branch
-      # - release               Triggers. Gitaction will trigger when i git push release branch
+    branches: #[ main-backup ]  Triggers. Gitaction will trigger when i git push main-backup branch
+      - develop               # Triggers. Gitaction will trigger when i git push develop branch
+      - release               # Triggers. Gitaction will trigger when i git push release branch
 
 jobs:
   
