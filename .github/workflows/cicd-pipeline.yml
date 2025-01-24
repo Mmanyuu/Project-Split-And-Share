@@ -76,7 +76,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest] #windows fails this test. need to look into this
-    needs: build
+    needs: build #requires build only for develop branch
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -99,8 +99,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest] #windows fails this test. need to look into this
-    needs: code_scan
+        os: [ubuntu-latest, macos-latest]
+    needs: code_scan # Different from test-develop. this will requires code_scan to pass.
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -120,8 +120,8 @@ jobs:
           mvn test -Dtest="$TEST_CLASSES"
   
   build-docker-image:
-    runs-on: ubuntu-latest
-    needs: test-release
+    runs-on: ubuntu-latest #building image in ubuntu os cause OS doesnt affect the result of container image as the image itself define its runtime environment. Just like we push create our own image in our own laptop and push up to our own dockerhub. other people can still pull and use it.
+    needs: test-release #workflow is after test-release passed.
     if: github.ref_name == 'release' # Only run on release branch
     steps:
       - uses: actions/checkout@v4
@@ -129,18 +129,18 @@ jobs:
         run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
       - name: Pull Docker Image
         run: docker pull bindugopinathan/project_split_and_share:tagname
-      - name: Tag Docker Image
+      - name: Tag Docker Image #changing tag
         run: docker tag bindugopinathan/project_split_and_share:tagname bindugopinathan/project_split_and_share:${{ github.sha }} #git.sha is dynamically generated tags
       - name: Push Docker Image
         run: docker push bindugopinathan/project_split_and_share:${{ github.sha }}
   
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # runs on just one os cause deploying separate build (one for each os) to the same app will overwrite the existing deployment multiple times and may cause unintended results
     needs: build-docker-image
     if: github.ref_name == 'release' # Only run on release branch
     steps:
       - uses: actions/checkout@v4
-      - name: Install Heroku CLI 
+      - name: Install Heroku CLI #another way i found out is to use ---> uses: akhileshns/heroku-deploy@v3.13.15 (which requires email, appname and apikey saved as secrets)
         run: curl https://cli-assets.heroku.com/install-ubuntu.sh | sh #installs the Heroku CLI (Command Line Interface) on the runner
       - name: Docker Login to Heroku #necessary cause interacting with Docker's registry (Heroku’s private registry in this case). need to authenticate Docker to make sure you're authorized to push images to Heroku
         run: echo ${{ secrets.HEROKU_API_KEY }} | docker login --username=_ --password-stdin registry.heroku.com
