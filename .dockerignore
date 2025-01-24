@@ -1,1 +1,4 @@
-frontend
+target
+.classpath
+.project
+postgres-data
