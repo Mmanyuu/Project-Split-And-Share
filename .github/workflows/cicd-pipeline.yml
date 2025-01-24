@@ -53,7 +53,7 @@ jobs:
   code_scan:
     runs-on: ubuntu-latest # Similar to dependencies test - No point scanning all three os cause this is about scanning our project codes
     needs: build # Depends on the build job
-    if: github.ref == 'refs/heads/release' # Run on release
+    if: github.ref_name == 'release'  # Run on release
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -75,7 +75,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest] #windows fails this test. need to look into this
     needs: code_scan
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/release' # Run on both develop and release
+    if: github.ref_name == 'develop' || github.ref_name == 'release' # Run on both develop and release
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
@@ -97,7 +97,7 @@ jobs:
   build-docker-image:
     runs-on: ubuntu-latest
     needs: test
-    if: github.ref == 'refs/heads/release' # Run on release
+    if: github.ref_name == 'release' # Run on release
     steps:
       - uses: actions/checkout@v3
       - name: Login to Docker Hub
@@ -105,14 +105,14 @@ jobs:
       - name: Pull Docker Image
         run: docker pull bindugopinathan/project_split_and_share:tagname
       - name: Tag Docker Image
-        run: docker tag bindugopinathan/project_split_and_share:tagname bindugopinathan/project_split_and_share:new_tag
+        run: docker tag bindugopinathan/project_split_and_share:tagname bindugopinathan/project_split_and_share:${{ github.sha }} #git.sha is dynamically generated tags
       - name: Push Docker Image
-        run: docker push bindugopinathan/project_split_and_share:new_tag
+        run: docker push bindugopinathan/project_split_and_share:${{ github.sha }}
   
   deploy:
     runs-on: ubuntu-latest
     needs: build-docker-image
-    if: github.ref == 'refs/heads/release' # Run on release
+    if: github.ref_name == 'release' # Run on release
     steps:
       - uses: actions/checkout@v3
       - name: Install Heroku CLI 
