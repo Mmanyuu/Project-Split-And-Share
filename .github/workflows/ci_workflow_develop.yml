@@ -42,7 +42,7 @@ jobs:
           distribution: 'temurin'
           cache: maven # Optional, but recommended
       - name: Install Snyk CLI
-        run: npm install -g snyk # Install snyk cli using npm
+        uses: snyk/actions/setup@master
       - name: Run Snyk Vulnerability Scan (Dependencies Only)
         env: # Define environment variables here
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} # Use GitHub secrets
