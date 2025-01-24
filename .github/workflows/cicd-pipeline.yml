@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline (For both branches)
 
 on:
   push:
@@ -75,6 +75,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest] #windows fails this test. need to look into this
     needs: build
+    if: github.ref_name == 'develop' # Only run on release branch
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
