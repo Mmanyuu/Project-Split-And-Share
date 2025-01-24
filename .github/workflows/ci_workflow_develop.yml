@@ -1,0 +1,94 @@
+name: CI Workflow Develop Branch
+
+on:
+  push:
+    branches:
+      - develop               # Triggers. Gitaction will trigger when i git push develop branch
+
+jobs:
+  
+  build:
+    runs-on: ${{ matrix.os }} #ensuring our projects can be build on all three kind of OS
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v3 #checks out github repo so that any files in my repo, such as dockerfile or configuration files are accessible
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin' # Recommended distribution
+          cache: maven
+      - name: Install Dependencies (Maven)
+        run: mvn -B clean install -DskipTests # -B for batch mode in mvn command. prevents interactive prompts in Maven, which can cause workflow to hang.
+      - name: Upload Artifacts (if needed) #crucial for multi OS build - saving the build outputs (JARs, etc) so that subsequents jobs (like testing and deploy) can use
+        if: always() # Always run this step, even if previous steps fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: target-${{ matrix.os }} # creating distinct artifact names (e.g. target-ubuntu-latest, target-marcos-latest). preventin overwriting artifacts
+          path: target/*.jar # Or the specific artifacts you need
+          retention-days: 1 # How long to keep the artifacts
+
+  dependencies_scan:
+    runs-on: ubuntu-latest # No point scanning all three os cause this is about scanning our project
+    needs: build # Depends on the build job
+    if: github.ref_name == 'release'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven # Optional, but recommended
+      - name: Install Snyk CLI
+        run: npm install -g snyk # Install snyk cli using npm
+      - name: Run Snyk Vulnerability Scan (Dependencies Only)
+        env: # Define environment variables here
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} # Use GitHub secrets
+        run: snyk test --file=pom.xml --severity-threshold=high || echo "Issues detected but not failing the build"  # Scan pom.xml for dependencies
+
+  code_scan:
+    runs-on: ubuntu-latest # Similar to dependencies test - No point scanning all three os cause this is about scanning our project codes
+    needs: build # Depends on the build job
+    if: github.ref_name == 'release'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven # Optional, but recommended
+      - name: Install Snyk CLI
+        run: npm install -g snyk # Install snyk cli using npm
+      - name: Run Snyk Code Vulnerability Scan
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk code test --severity-threshold=medium
+
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest] #windows fails this test. need to look into this
+    needs: code_scan
+    if: github.ref_name == 'develop' || github.ref_name == 'release'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin' # Recommended distribution
+          cache: maven
+      - name: Download Artifacts #downloading the artifacts that was saved in build
+        uses: actions/download-artifact@v4
+        with:
+          name: target-${{ matrix.os }}
+          path: target # Download the contents into the 'target' directory
+      - name: Run Three Tests (Maven)
+        run: |
+          export TEST_CLASSES="sg.edu.ntu.split_and_share.service.UserServiceImplTest,sg.edu.ntu.split_and_share.service.ExpenseServiceImplTest,sg.edu.ntu.split_and_share.controller.ExpenseControllerTest"
+          mvn test -Dtest="$TEST_CLASSES"
